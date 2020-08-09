@@ -1,0 +1,190 @@
+---
+title: "Food and Drink Trivia"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab
+    highlight: tango 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r, overall-plots, include=FALSE}
+library(tidyverse)
+library(here)
+library(janitor)
+library(rio)
+library(colorblindr)
+library(gghighlight)
+library(forcats)
+library(ggrepel)
+library(gt)
+library(knitr)
+library(kableExtra)
+library(reactable)
+library(plotly)
+library(glue)
+library(fs)
+
+theme_set(theme_minimal(15) +
+            theme(legend.position = "bottom",
+                  panel.grid.major.x = element_line(colour = "gray60"),
+                  panel.grid.minor.x = element_blank(),
+                  panel.grid.major.y = element_blank())
+          )
+
+correct_answers <- import(here("data", "food_drink_trivia_correct_answers.xlsx"),
+               setclass = "tbl_df") 
+
+results <- import(here("data", "food_drink_trivia_results.xlsx"),
+               setclass = "tbl_df") 
+
+head(correct_answers)
+head(results)
+
+
+```
+
+# Correct Answers {.tabset .tabset-fade .tabset-pills}
+
+## Image Round 
+
+```{r, include=FALSE}
+head(correct_answers)
+
+image_correct <- correct_answers %>% 
+  select(c(1:3))
+
+image_correct_tbl <- image_correct %>% 
+  reactable(columns = list(
+    Image = colDef(align = "center"),
+    `Movie Title` = colDef(align = "center"),
+    `Fry the Bacon` = colDef(align = "center")),
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    height = 600,
+    width = 500)
+```
+
+```{r, include=TRUE}
+image_correct_tbl
+```
+
+## General Knowledge 
+
+```{r, include=FALSE}
+gk_correct <- correct_answers %>% 
+  select(4:5)
+
+gk_correct_tbl <- gk_correct %>% 
+  reactable(columns = list(
+    `General Knowledge`= colDef(align = "center"),
+    Answer = colDef(align = "center")),
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    height = 400,
+    width = 500)
+```
+
+```{r, include=TRUE}
+gk_correct_tbl
+```
+
+## Audio Round 
+
+```{r, include=FALSE}
+audio_correct <- correct_answers %>% 
+  select(c(6:8))
+
+audio_correct_tbl <- audio_correct %>% 
+  reactable(columns = list(
+    Audio = colDef(align = "center"),
+    Artist = colDef(align = "center"),
+    `Song Title` = colDef(align = "center")),
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    height = 400,
+    width = 500)
+```
+
+```{r, include=TRUE}
+audio_correct_tbl
+```
+
+# Results {.tabset .tabset-fade .tabset-pills}
+
+## Leader Board 
+
+```{r, include=FALSE}
+total_results <- results %>% 
+  select(team_name, Total) %>% 
+  arrange(desc(Total))
+
+total_results_tbl <- total_results %>% 
+  reactable(columns = list(
+    team_name = colDef(name = "Team Name", align = "center"),
+    Total = colDef(align = "center")),
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    height = 400,
+    width = 500)
+```
+
+```{r, include=TRUE}
+total_results_tbl
+```
+
+## Break Down 
+
+```{r, include=FALSE}
+
+results_order <- c("Total", 
+                   "Audio Round",
+                   "Song Title",
+                   "Artist",
+                   "General Knowledge",
+                   "Image Round",
+                   "Fry the Bacon",
+                   "Movie Title")
+
+results_clean <- results %>% 
+  pivot_longer(
+    cols = c(2:9),
+    names_to = "level",
+    values_to = "score"
+  )
+
+
+results_plot <- ggplot(results_clean, aes(level, score)) +
+  geom_col(fill = "blue",
+           alpha = 0.7) +
+  scale_x_discrete(limits = results_order) +
+  scale_y_continuous(limits = c(0, 30),
+                     breaks = c(0, 5, 10, 15, 20, 25, 30)) +
+  coord_flip() +
+  geom_text(aes(level, score, label = score),
+            nudge_y = -0.5,
+            color = "white") +
+  facet_wrap(~team_name) +
+  labs(x = "",
+       y = "Score")
+```
+
+```{r, include=TRUE, fig.width=10, fig.height=8}
+results_plot
+```
