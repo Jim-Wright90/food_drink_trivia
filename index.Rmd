@@ -178,8 +178,8 @@ results_plot <- ggplot(results_clean, aes(level, score)) +
                      breaks = c(0, 5, 10, 15, 20, 25, 30)) +
   coord_flip() +
   geom_text(aes(level, score, label = score),
-            nudge_y = -0.5,
-            color = "white") +
+            nudge_y = 2.0,
+            color = "black") +
   facet_wrap(~team_name) +
   labs(x = "",
        y = "Score")
