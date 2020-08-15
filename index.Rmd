@@ -42,6 +42,9 @@ correct_answers <- import(here("data", "food_drink_trivia_correct_answers.xlsx")
 results <- import(here("data", "food_drink_trivia_results.xlsx"),
                setclass = "tbl_df") 
 
+all_wrong <- import(here("data", "missed_by_all.xlsx"),
+               setclass = "tbl_df") 
+
 head(correct_answers)
 head(results)
 
@@ -187,4 +190,28 @@ results_plot <- ggplot(results_clean, aes(level, score)) +
 
 ```{r, include=TRUE, fig.width=10, fig.height=8}
 results_plot
+```
+
+## The Ones No One Got Correct 
+
+```{r, include=FALSE}
+
+head(all_wrong)
+
+all_wrong_tbl <- all_wrong %>% 
+  reactable(columns = list(
+    Round = colDef(align = "center"),
+    Question = colDef(align = "center"),
+    Answer = colDef(align = "center")),
+    striped = TRUE,
+    outlined = TRUE,
+    compact = TRUE,
+    highlight = TRUE,
+    bordered = TRUE,
+    height = 400,
+    width = 500)
+```
+
+```{r, include=TRUE}
+all_wrong_tbl
 ```
